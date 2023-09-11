@@ -1,0 +1,111 @@
+defaultTasks 'clean', 'test', 'aggregate'
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath("net.serenity-bdd:serenity-gradle-plugin:2.4.34")
+        classpath "net.serenity-bdd:serenity-single-page-report:3.2.3"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'net.serenity-bdd.aggregator'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+ext {
+    libs = [
+            slf4jApi: "org.slf4j:slf4j-api:${slf4jVersion}",
+            logback : "ch.qos.logback:logback-classic:${logbackVersion}",
+            cucumberJava: "io.cucumber:cucumber-java:${cucumberIOVersion}",
+            cucumberJunit: "io.cucumber:cucumber-junit:${cucumberIOVersion}",
+            aeonbits: "org.aeonbits.owner:owner-java8:${aeonbitsVersion}",
+            log4j: "log4j:log4j:${log4jVersion}",
+            tess4j: "net.sourceforge.tess4j:tess4j:${tess4jVersion}",
+            jsonShemaValidator: "com.github.fge:json-schema-validator:${jsonShemaValidatorVersion}",
+            httpclient: "commons-httpclient:commons-httpclient:${httpclientVersion}",
+            json: "org.json:json:${jsonVersion}",
+            lombok: "org.projectlombok:lombok:${lombokVersion}",
+
+
+            test    : [
+                    serenity: [
+                            core               : "net.serenity-bdd:serenity-core:${serenityCoreVersion}",
+                            junit              : "net.serenity-bdd:serenity-junit:${serenityCoreVersion}",
+                            screenplay         : "net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}",
+                            screenplayWebdriver: "net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}",
+                            serenityCucumber   : "net.serenity-bdd:serenity-cucumber6:${serenityCucumberVersion}",
+                            rest               : "net.serenity-bdd:serenity-rest-assured:${serenityRestAssured}",
+                            screenplayRest     : "net.serenity-bdd:serenity-screenplay-rest:${serenityRestAssured}",
+                            ensure             : "net.serenity-bdd:serenity-ensure:${serenityRestAssured}",
+                            jsonValidator      : "io.rest-assured:json-schema-validator:${serenityRestAssured}"
+
+                    ],
+                    junit   : "junit:junit:${junitVersion}",
+                    assertj : "org.assertj:assertj-core:${assertJVersion}",
+                    hamcrest: "org.hamcrest:hamcrest-all:${hamcrestVersion}"
+            ]
+    ]
+
+}
+
+dependencies {
+            implementation libs.logback,
+            libs.cucumberJava,
+            libs.cucumberJunit,
+            libs.aeonbits,
+            libs.test.serenity.screenplayRest,
+            libs.test.serenity.ensure,
+            libs.test.serenity.jsonValidator,
+            libs.test.serenity.serenityCucumber,
+            libs.log4j,
+            libs.tess4j,
+            libs.jsonShemaValidator,
+            libs.httpclient,
+            libs.json
+
+
+    testImplementation libs.test.junit,
+            libs.test.assertj,
+            libs.test.hamcrest,
+            libs.test.serenity.screenplayRest
+    testImplementation 'junit:junit:4.13.1'
+    testCompileOnly         libs.lombok
+    testAnnotationProcessor libs.lombok
+
+}
+
+test {
+    testLogging.showStandardStreams = true
+    maxParallelForks=3
+    systemProperties System.getProperties()
+}
+
+test {
+    systemProperty 'webdriver.chrome.driver', 'D:\\Users\\Golden\\Documents\\Code\\automatizacion_valid\\src\\test\\resources\\webdriver\\windows\\chromedriver32.exe'
+}
+
+serenity {
+    reports = ["single-page-html"]
+}
+
+gradle.startParameter.continueOnFailure = true
+
+test.finalizedBy(aggregate)
